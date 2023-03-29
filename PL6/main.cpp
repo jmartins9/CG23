@@ -19,15 +19,42 @@
 
 using namespace std;
 
-float camX = 00, camY = 30, camZ = 40;
 int startX, startY, tracking = 0;
 
-int alpha = 0, beta = 45, r = 50;
+float k = 2;
+float alpha = 0;
+float camX = 1, camY, camZ = 1;
+float lx, ly, lz;
+float dx, dy, dz;
+
+
+
+int beta = 45, r = 50;
 unsigned int t, tw, th;
 unsigned char* imageData;
 float  inc = 0;
 vector<float> vertexB;
 GLuint buffers[1];
+
+void aux() {
+    dx = lx - camX;
+    dy = 0;
+    dz = lz - camZ;
+
+    camX = camX + k * dx;
+    camY = camY + k * dy;
+    camZ = camZ + k * dz;
+
+    lx = lx + k * dx;
+    ly = ly + k * dy;
+    lz = lz + k * dz;
+}
+
+void aux1() {
+    lx = camX + sin(alpha);
+    ly = camY;
+    lz = camZ + cos(alpha);
+}
 
 
 void changeSize(int w, int h) {
@@ -54,80 +81,116 @@ void changeSize(int w, int h) {
 	glMatrixMode(GL_MODELVIEW);
 }
 
+float getHeight(int i, int j) {
+    return imageData[i * tw + j];
+}
+
+float getHeightf(float x , float z) {
+    float x1 = floor(x);
+    float x2 = x1 + 1;
+    float z1 = floor(z);
+    float z2 = z1 + 1;
+
+    float fz = z - z1;
+    float fx = x - x1;
+
+    float h_x1_z = getHeight(x1 + 128,z1 + 128) * (1-fz) + getHeight(x1 + 128,z2 + 128) * fz;
+    float h_x2_z = getHeight(x2 + 128,z1 + 128) * (1-fz) + getHeight(x2 + 128,z2 + 128) * fz;
+
+    return  h_x1_z * (1 - fx) + h_x2_z * fx;
+}
+
+void produtoExterno() {
+    float rx = - dz;
+    float ry = 0;
+    float rz = dx - dy;
+    camX = camX + k * rx;
+    camY = camY + k * ry;
+    camZ = camZ + k * rz;
+
+    lx = lx + k * rx;
+    ly = ly + k * ry;
+    lz = lz + k * rz;
+}
+
+
 void drawTree(float x, float z) {
-	glPushMatrix();
+    glPushMatrix();
 
-	glColor3f(0.1f, 0.0f, 0.0f);
-	glTranslatef(x, 0, z);
-	glPushMatrix();
-	glRotatef(-90, 1, 0, 0);
-	glutSolidCone(1, 6, 8, 4);
-	glPopMatrix();
-	glColor3f(0.0f, 0.1f, 0.0f);
-	glTranslatef(0, 4, 0);
-	glRotatef(-90, 1, 0, 0);
-	glutSolidCone(2, 8, 8, 4);
+    glColor3f(0.1f, 0.0f, 0.0f);
+    glTranslatef(x, getHeightf(x, z), z);
+    glPushMatrix();
+    glRotatef(-90, 1, 0, 0);
+    glutSolidCone(1, 6, 8, 4);
+    glPopMatrix();
+    glColor3f(0.0f, 0.1f, 0.0f);
+    glTranslatef(0, 4, 0);
+    glRotatef(-90, 1, 0, 0);
+    glutSolidCone(2, 8, 8, 4);
 
-	glColor3f(1, 1, 1);
-	glPopMatrix();
+    glColor3f(1, 1, 1);
+    glPopMatrix();
 }
 
 void drawTeapots1() {
-	glPushMatrix();
+    glPushMatrix();
 
-	float angle = 2 * M_PI / 10;
-	for (int i = 0; i < 10; i++) {
-		glPushMatrix();
-		glRotatef((i * angle + inc) * 180 / M_PI, 0, 1, 0);
-		glTranslatef(10, 2, 0);
-		glutSolidTeapot(2);
-		glPopMatrix();
-	}
+    float angle = 2 * M_PI / 10;
+    for (int i = 0; i < 10; i++) {
+        glPushMatrix();
+        glRotatef((i * angle + inc) * 180 / M_PI, 0, 1, 0);
+        glTranslatef(10, 2, 0);
+        glutSolidTeapot(2);
+        glPopMatrix();
+    }
 
-	glPopMatrix();
+    glPopMatrix();
 }
 
 void drawTeapots2() {
-	glPushMatrix();
+    glPushMatrix();
 
-	float angle = 2 * M_PI / 10;
-	for (int i = 0; i < 10; i++) {
-		glPushMatrix();
-		glRotatef((i * angle - inc) * 180 / M_PI, 0, 1, 0);
-		glTranslatef(30, 2, 0);
-		glRotatef(90, 0, 1, 0);
-		glutSolidTeapot(2);
-		glPopMatrix();
-	}
+    float angle = 2 * M_PI / 10;
+    for (int i = 0; i < 10; i++) {
+        glPushMatrix();
+        glRotatef((i * angle - inc) * 180 / M_PI, 0, 1, 0);
+        glTranslatef(30, 2, 0);
+        glRotatef(90, 0, 1, 0);
+        glutSolidTeapot(2);
+        glPopMatrix();
+    }
 
-	glPopMatrix();
+    glPopMatrix();
 }
 
 
 void drawTerrain() {
 
     // colocar aqui o código de desnho do terreno usando VBOs com TRIANGLE_STRIPS
-	glBindBuffer(GL_ARRAY_BUFFER, buffers[0]);
-	glVertexPointer(3, GL_FLOAT, 0, 0);
+    glBindBuffer(GL_ARRAY_BUFFER, buffers[0]);
+    glVertexPointer(3, GL_FLOAT, 0, 0);
 
-	for (int i = 0; i < th - 1; i++) {
-		glDrawArrays(GL_TRIANGLE_STRIP, i * tw * 2, tw * 2);
-	}
-	
+    for (int i = 0; i < th - 1; i++) {
+        glDrawArrays(GL_TRIANGLE_STRIP, i * tw * 2, tw * 2);
+    }
+
 }
+
 
 
 
 void renderScene(void) {
 
-	float pos[4] = {-1.0, 1.0, 1.0, 0.0};
-
 	glClearColor(0.0f,0.0f,0.0f,0.0f);
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
 	glLoadIdentity();
-	gluLookAt(camX, camY, camZ, 
-		      0.0,0.0, 0.0,
+    if (!(abs(camX) > 127.5f || abs(camZ) > 127.5f)) {
+        camY = getHeightf(camX, camZ) + 3;
+        aux1();
+    }
+    gluLookAt(camX, camY, camZ,
+		      lx,ly, lz,
 			  0.0f,1.0f,0.0f);
 
 	// put axis drawing in here
@@ -151,7 +214,10 @@ void renderScene(void) {
 	glPolygonMode(GL_FRONT, GL_LINE);
 	drawTerrain();
 
-	glPolygonMode(GL_FRONT, GL_FILL);
+    glColor3f(1, 1, 1);
+
+    glPolygonMode(GL_FRONT, GL_FILL);
+
 
 	// Same random seed
 	srand(1);
@@ -199,8 +265,30 @@ void renderScene(void) {
 
 
 void processKeys(unsigned char key, int xx, int yy) {
+    if(key == 'W' || key == 'w') {
+        if (k<0) {
+            k = -k;
+        }
+        aux();
+    } else if(key == 'A' || key == 'a') {
+        if (k>0) {
+            k = -k;
+        }
+        produtoExterno();
+    } else if(key == 'S' || key == 's') {
+        if (k>0) {
+            k = -k;
+        }
+        aux();
 
-// put code to process regular keys in here
+    } else if(key == 'D' || key == 'd') {
+        if (k<0) {
+            k = -k;
+        }
+        produtoExterno();
+    } else if(key == 'C' || key == 'c') {
+        alpha += 0.05;
+    }
 }
 
 
@@ -269,10 +357,6 @@ void processMouseMotion(int xx, int yy) {
 	camX = rAux * sin(alphaAux * 3.14 / 180.0) * cos(betaAux * 3.14 / 180.0);
 	camZ = rAux * cos(alphaAux * 3.14 / 180.0) * cos(betaAux * 3.14 / 180.0);
 	camY = rAux * 							     sin(betaAux * 3.14 / 180.0);
-}
-
-float getHeight(int i, int j) {
-	return imageData[i * tw + j];
 }
 
 
