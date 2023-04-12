@@ -127,7 +127,8 @@ void renderText() {
     glLoadIdentity();
     glRasterPos2d(10, 20);
 
-    char text[64] = "Ola manos";
+    char text[64] = "Snowman 0";
+    text[8] = '0'+ picked;
     for (char *c = text; *c != '\0'; c++) {
         glutBitmapCharacter(GLUT_BITMAP_TIMES_ROMAN_24, *c);
     }
@@ -180,9 +181,11 @@ void renderScene(void) {
 			glPopMatrix();
 		}
 
-	renderText();
+    if (picked!=0) {
+        renderText();
+    }
 
-	frame++;
+    frame++;
 	timet=glutGet(GLUT_ELAPSED_TIME);
 	if (timet - timebase > 1000) {
 		sprintf(s,"FPS:%4.2f",frame*1000.0/(timet-timebase));
@@ -248,7 +251,6 @@ void processNormalKeys(unsigned char key, int x, int y) {
 
 void processMouseButtons(int button, int state, int xx, int yy) 
 {
-	printf("%d %d\n", xx, yy);
 	if (state == GLUT_DOWN)  {
 		startX = xx;
 		startY = yy;
@@ -259,8 +261,9 @@ void processMouseButtons(int button, int state, int xx, int yy)
 		else { // Middle button
 			tracking = 0;
 			picked = picking(xx,yy);
-			if (picked)
-				printf("Picked Snowman number %d\n", picked);
+			if (picked) {
+                printf("Picked Snowman number %d\n", picked);
+            }
 			else
 				printf("Nothing selected\n");
 			glutPostRedisplay();
