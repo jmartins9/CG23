@@ -1,0 +1,3 @@
+/home/guilherme/Documents/CG/CG23/PL8/cmake-build-debug/CMakeFiles/class2.dir
+/home/guilherme/Documents/CG/CG23/PL8/cmake-build-debug/CMakeFiles/edit_cache.dir
+/home/guilherme/Documents/CG/CG23/PL8/cmake-build-debug/CMakeFiles/rebuild_cache.dir
