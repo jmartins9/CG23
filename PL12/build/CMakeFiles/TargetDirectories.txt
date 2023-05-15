@@ -1,0 +1,3 @@
+/media/guilherme/Files/CG/CG23/PL12/build/CMakeFiles/rebuild_cache.dir
+/media/guilherme/Files/CG/CG23/PL12/build/CMakeFiles/edit_cache.dir
+/media/guilherme/Files/CG/CG23/PL12/build/CMakeFiles/class10.dir

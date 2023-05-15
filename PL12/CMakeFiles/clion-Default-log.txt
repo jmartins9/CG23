@@ -1,0 +1,4 @@
+Cannot generate into /media/guilherme/Files1/CG/CG23/PL12
+It is already used for project /media/guilherme/Files/CG/CG23/PL12
+
+Please either delete it manually or select another generation directory
